@@ -1,40 +1,9 @@
+import pygame as pg
+
 from component import Component
-
-class Node:
-	def __init__(self, idx = None):
-		self.idx = idx
-		self.in_edges = []
-		self.out_edges = []
-	
-	def add_edge(self, edge):
-		if edge.src is self: self.out_edges.append(edge)
-		if edge.dest is self: self.in_edges.append(edge)
-	
-	def remove_edge(self, edge):
-		self.in_edges[:] = (e for e in self.in_edges if e is not edge)
-		self.out_edges[:] = (e for e in self.out_edges if e is not edge)
-	
-	def merge_with(self, node):
-		vis = set(self.in_edges)
-		
-		for e in node.in_edges:
-			e.dest = self
-			if e not in vis: self.in_edges.append(e)
-			vis.add(e)
-		
-		vis = set(self.out_edges)
-		
-		for e in node.out_edges:
-			e.src = self
-			if e not in vis: self.out_edges.append(e)
-			vis.add(e)
-
-class Edge:
-	def __init__(self, src, dest, comp, idx = None):
-		self.idx = idx
-		self.src = src
-		self.dest = dest
-		self.comp = comp
+from consts import *
+from node import Node
+from edge import Edge
 
 class Graph:
 	def __init__(self):
@@ -45,8 +14,16 @@ class Graph:
 		while len(self.nodes) <= node:
 			self.append_node()
 	
-	def append_node(self):
-		self.nodes.append(Node(len(self.nodes)))
+	def append_node(self, pos = (0, 0)):
+		self.nodes.append(Node(len(self.nodes), pos))
+	
+	def add_component(self, comp, pos):
+		x, y = pos
+		self.append_node((x-DEFAULT_EDGE_LENGTH//2, y))
+		self.append_node((x+DEFAULT_EDGE_LENGTH//2, y))
+
+		last = len(self.nodes) - 1
+		self.add_edge(comp, last-1, last)
 	
 	def add_edge(self, comp, u, v):
 		self.fill_nodes_until(max(u, v))
@@ -73,6 +50,10 @@ class Graph:
 		self.nodes[u].merge_with(self.nodes[v])
 		del self.nodes[v]
 		reindex(self.nodes)
+	
+	def draw(self, window):
+		for edge in self.edges: edge.draw(window)
+		for node in self.nodes: node.draw(window)
 
 def reindex(arr):
 	for a, i in zip(arr, range(len(arr))):
