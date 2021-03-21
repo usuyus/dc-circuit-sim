@@ -1,6 +1,7 @@
 import pygame as pg
 
 from consts import *
+from utils import *
 
 class Node:
 	def __init__(self, idx = None, pos = (0, 0)):
@@ -31,6 +32,9 @@ class Node:
 			e.src = self
 			if e not in vis: self.out_edges.append(e)
 			vis.add(e)
+	
+	def is_near(self, p):
+		return dist(self.pos, p) <= NODE_SIZE
 	
 	def draw(self, window):
 		pg.draw.circle(window, WHITE, self.pos, NODE_SIZE, NODE_THICKNESS)
